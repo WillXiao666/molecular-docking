@@ -12,11 +12,10 @@ from .core import (
     export_poses,
     make_scratch,
     parse_box_config,
-    pose_results_to_rows,
     prepare_ligand,
     prepare_receptor,
     run_vina,
-    summarize_pose_results,
+    summarize_ablation_results,
     write_csv,
 )
 
@@ -69,7 +68,6 @@ def main(argv: list[str] | None = None) -> int:
     ligand_pdbqt = prepare_ligand(ligand_sdf, scratch)
 
     summary_rows: list[dict[str, object]] = []
-    pose_rows: list[dict[str, object]] = []
     for seed in parse_int_list(args.seeds):
         params = DockingParams(args.exhaustiveness, args.num_modes, args.energy_range, seed, args.cpu)
         label = f"seed_{seed}"
@@ -79,12 +77,10 @@ def main(argv: list[str] | None = None) -> int:
         results = evaluate_poses(ligand_sdf, docked_sdf, docked_pdbqt)
 
         extra = {"seed": seed, "exhaustiveness": args.exhaustiveness}
-        summary_rows.append(summarize_pose_results(results, extra))
-        pose_rows.extend(pose_results_to_rows(results, extra))
+        summary_rows.append(summarize_ablation_results(results, extra))
         copy_run_files(run_dir, output_dir / label)
 
     write_csv(output_dir / "summary_by_seed.csv", summary_rows)
-    write_csv(output_dir / "pose_rmsd_by_mode.csv", pose_rows)
     print("\nDone")
     print(f"  output: {output_dir}")
     print(f"  summary: {output_dir / 'summary_by_seed.csv'}")

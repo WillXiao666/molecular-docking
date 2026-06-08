@@ -378,6 +378,19 @@ def summarize_pose_results(results: list[PoseResult], extra: dict[str, object] |
     return {**extra, **row} if extra else row
 
 
+def summarize_ablation_results(results: list[PoseResult], extra: dict[str, object] | None = None) -> dict[str, object]:
+    best_affinity = min(results, key=lambda r: r.affinity_kcal_mol)
+    best_rmsd = min(results, key=lambda r: r.heavy_atom_rmsd_A)
+    top5_by_affinity = sorted(results, key=lambda r: r.affinity_kcal_mol)[:5]
+    average_top5_rmsd = sum(r.heavy_atom_rmsd_A for r in top5_by_affinity) / len(top5_by_affinity)
+    row: dict[str, object] = {
+        "rmsd_of_best_affinity_A": best_affinity.heavy_atom_rmsd_A,
+        "best_rmsd_A": best_rmsd.heavy_atom_rmsd_A,
+        "average_rmsd_of_top5_affinity_A": average_top5_rmsd,
+    }
+    return {**extra, **row} if extra else row
+
+
 def copy_run_files(run_dir: Path, output_dir: Path, include_prepared: tuple[Path, Path] | None = None) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     for name in ("docked_poses.pdbqt", "docked_poses.sdf", "vina.log"):

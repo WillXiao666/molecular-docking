@@ -112,7 +112,6 @@ Outputs:
 ```text
 data/vina_runs/exhaustiveness_ablation/
   summary_by_exhaustiveness.csv
-  pose_rmsd_by_mode.csv
 ```
 
 ### Seed Ablation
@@ -131,7 +130,6 @@ Outputs:
 ```text
 data/vina_runs/seed_ablation/
   summary_by_seed.csv
-  pose_rmsd_by_mode.csv
 ```
 
 ### Num Modes Ablation
@@ -150,10 +148,17 @@ Outputs:
 ```text
 data/vina_runs/num_modes_ablation/
   summary_by_num_modes.csv
-  pose_rmsd_by_mode.csv
 ```
 
 ## Metrics
+
+Ablation summaries report three RMSD metrics:
+
+```text
+rmsd_of_best_affinity_A
+best_rmsd_A
+average_rmsd_of_top5_affinity_A
+```
 
 RMSD is computed on heavy atoms in the receptor coordinate frame without ligand superposition. Symmetry-equivalent atom mappings are considered.
 
