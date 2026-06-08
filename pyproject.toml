@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moldock-exp"
+version = "0.1.0"
+description = "CPU AutoDock Vina workflows for a drug-design molecular docking experiment."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "rdkit",
+  "meeko",
+]
+
+[project.scripts]
+dock-run = "moldock_exp.docking_main:main"
+dock-exhaustiveness-ablation = "moldock_exp.exhaustiveness_seed_ablation:main"
+dock-num-modes-ablation = "moldock_exp.num_modes_ablation:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
