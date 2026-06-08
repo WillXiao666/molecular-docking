@@ -38,6 +38,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cpu", type=int, default=os.cpu_count() or 1)
     parser.add_argument("--default-altloc", default="A")
     parser.add_argument("--no-allow-bad-res", action="store_true")
+    parser.add_argument("--keep-nonstandard-residues", action="store_true")
     parser.add_argument("--output-name", default="seed_ablation")
     parser.add_argument("--work-root", help="ASCII scratch directory. Defaults to the system temp directory.")
     return parser
@@ -63,6 +64,7 @@ def main(argv: list[str] | None = None) -> int:
         scratch,
         default_altloc=args.default_altloc,
         allow_bad_res=not args.no_allow_bad_res,
+        clean_receptor=not args.keep_nonstandard_residues,
     )
     ligand_pdbqt = prepare_ligand(ligand_sdf, scratch)
 

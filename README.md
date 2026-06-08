@@ -40,9 +40,9 @@ Place input files in one data directory:
 
 ```text
 data/
-  protein_with_h.pdb   # preferred receptor
+  protein_with_h.pdb   # preferred receptor; non-standard residues are removed by default
   protein.pdb          # fallback receptor
-  ligand.sdf           # experimental ligand coordinates
+  ligand.sdf           # experimental ligand coordinates; explicit H atoms are added automatically
   box_config.txt       # Vina pocket box
 ```
 
@@ -168,5 +168,8 @@ Typical interpretation:
 ## Notes
 
 - `protein_with_h.pdb` is used by default when available.
+- Non-standard receptor residues such as glycans, salts, solvent, and co-crystallized ligands are removed by default before receptor preparation.
+- Use `--keep-nonstandard-residues` to disable receptor cleanup.
+- `ligand.sdf` is automatically converted to an explicit-H SDF before Meeko ligand preparation.
 - Receptor preparation uses `default_altloc=A` unless changed by `--default-altloc`.
 - Use `--no-allow-bad-res` to disable Meeko's permissive residue handling.

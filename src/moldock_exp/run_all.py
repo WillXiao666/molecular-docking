@@ -16,6 +16,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cpu", type=int, default=os.cpu_count() or 1)
     parser.add_argument("--default-altloc", default="A")
     parser.add_argument("--no-allow-bad-res", action="store_true")
+    parser.add_argument("--keep-nonstandard-residues", action="store_true")
     parser.add_argument("--output-root", default="results", help="Folder name under data/vina_runs.")
     parser.add_argument("--work-root", help="Optional ASCII scratch root. Defaults to the system temp directory.")
     return parser
@@ -33,6 +34,8 @@ def optional_args(args: argparse.Namespace) -> list[str]:
             values.extend([option, str(value)])
     if args.no_allow_bad_res:
         values.append("--no-allow-bad-res")
+    if args.keep_nonstandard_residues:
+        values.append("--keep-nonstandard-residues")
     return values
 
 

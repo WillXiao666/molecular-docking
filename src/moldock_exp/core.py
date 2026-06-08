@@ -41,6 +41,36 @@ class PoseResult:
     is_success_3A: int
 
 
+STANDARD_RESIDUES = {
+    "ALA",
+    "ARG",
+    "ASN",
+    "ASP",
+    "CYS",
+    "GLN",
+    "GLU",
+    "GLY",
+    "HIS",
+    "ILE",
+    "LEU",
+    "LYS",
+    "MET",
+    "PHE",
+    "PRO",
+    "SER",
+    "THR",
+    "TRP",
+    "TYR",
+    "VAL",
+    "HID",
+    "HIE",
+    "HIP",
+    "CYX",
+    "ASH",
+    "GLH",
+}
+
+
 def make_scratch(work_root: str | None, name: str) -> Path:
     scratch = Path(work_root).resolve() if work_root else Path(tempfile.gettempdir()) / name
     if scratch.exists():
@@ -120,12 +150,40 @@ def copy_inputs_to_scratch(
     return protein_dst, ligand_dst, box_dst
 
 
-def prepare_receptor(protein: Path, scratch: Path, *, default_altloc: str, allow_bad_res: bool) -> Path:
+def clean_receptor_to_standard_residues(protein: Path, scratch: Path) -> Path:
+    cleaned = scratch / "receptor_standard_residues.pdb"
+    kept_atoms = 0
+    skipped_atoms = 0
+    with protein.open(encoding="utf-8", errors="ignore") as source, cleaned.open("w", encoding="ascii") as target:
+        for line in source:
+            record = line[:6].strip()
+            if record in {"ATOM", "HETATM"}:
+                residue_name = line[17:20].strip()
+                if record == "ATOM" or residue_name in STANDARD_RESIDUES:
+                    target.write(line)
+                    kept_atoms += 1
+                else:
+                    skipped_atoms += 1
+            elif record in {"TER", "END"}:
+                target.write(line)
+    print(f"\nReceptor cleanup: kept {kept_atoms} protein atoms, skipped {skipped_atoms} non-standard atoms")
+    return cleaned
+
+
+def prepare_receptor(
+    protein: Path,
+    scratch: Path,
+    *,
+    default_altloc: str,
+    allow_bad_res: bool,
+    clean_receptor: bool,
+) -> Path:
+    receptor_input = clean_receptor_to_standard_residues(protein, scratch) if clean_receptor else protein
     command = [
         sys.executable,
         str(find_tool("mk_prepare_receptor.py", python_script=True)),
         "--read_pdb",
-        str(protein),
+        str(receptor_input),
         "-o",
         str(scratch / "receptor"),
         "-p",
@@ -139,13 +197,31 @@ def prepare_receptor(protein: Path, scratch: Path, *, default_altloc: str, allow
     return scratch / "receptor.pdbqt"
 
 
+def ensure_explicit_hydrogens(ligand_sdf: Path, scratch: Path) -> Path:
+    from rdkit import Chem
+
+    supplier = Chem.SDMolSupplier(str(ligand_sdf), removeHs=False)
+    molecules = [mol for mol in supplier if mol is not None]
+    if not molecules:
+        raise ValueError(f"RDKit could not read any molecules from {ligand_sdf}")
+
+    explicit_h_sdf = scratch / "ligand_explicit_h.sdf"
+    writer = Chem.SDWriter(str(explicit_h_sdf))
+    for mol in molecules:
+        writer.write(Chem.AddHs(mol, addCoords=True))
+    writer.close()
+    print(f"\nLigand cleanup: wrote explicit hydrogens for {len(molecules)} molecule(s)")
+    return explicit_h_sdf
+
+
 def prepare_ligand(ligand_sdf: Path, scratch: Path) -> Path:
+    ligand_input = ensure_explicit_hydrogens(ligand_sdf, scratch)
     ligand_pdbqt = scratch / "ligand.pdbqt"
     command = [
         sys.executable,
         str(find_tool("mk_prepare_ligand.py", python_script=True)),
         "-i",
-        str(ligand_sdf),
+        str(ligand_input),
         "-o",
         str(ligand_pdbqt),
     ]
