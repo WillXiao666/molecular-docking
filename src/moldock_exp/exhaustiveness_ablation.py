@@ -43,8 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> int:
-    args = build_parser().parse_args()
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
     data_dir = Path(args.data_dir).resolve()
     output_dir = data_dir / "vina_runs" / args.output_name
     output_dir.mkdir(parents=True, exist_ok=True)

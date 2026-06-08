@@ -24,9 +24,10 @@ Install this package:
 pip install -e . --no-deps
 ```
 
-After installation, four commands are available:
+After installation, five commands are available:
 
 ```text
+dock-all
 dock-run
 dock-exhaustiveness-ablation
 dock-seed-ablation
@@ -56,13 +57,29 @@ Example `box_config.txt`:
 Run from the data directory:
 
 ```powershell
-dock-run
+dock-all
 ```
 
 Or specify a data directory:
 
 ```powershell
-dock-run --data-dir path\to\data
+dock-all --data-dir path\to\data
+```
+
+This runs all experiments in sequence:
+
+```text
+data/vina_runs/results/
+  single_docking/
+  exhaustiveness_ablation/
+  seed_ablation/
+  num_modes_ablation/
+```
+
+To run only the main docking experiment:
+
+```powershell
+dock-run
 ```
 
 Recommended single-run setting:

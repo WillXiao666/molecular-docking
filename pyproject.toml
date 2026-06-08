@@ -14,6 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
+dock-all = "moldock_exp.run_all:main"
 dock-run = "moldock_exp.docking_main:main"
 dock-exhaustiveness-ablation = "moldock_exp.exhaustiveness_ablation:main"
 dock-seed-ablation = "moldock_exp.seed_ablation:main"
