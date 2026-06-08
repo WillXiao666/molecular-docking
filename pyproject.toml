@@ -15,7 +15,8 @@ dependencies = [
 
 [project.scripts]
 dock-run = "moldock_exp.docking_main:main"
-dock-exhaustiveness-ablation = "moldock_exp.exhaustiveness_seed_ablation:main"
+dock-exhaustiveness-ablation = "moldock_exp.exhaustiveness_ablation:main"
+dock-seed-ablation = "moldock_exp.seed_ablation:main"
 dock-num-modes-ablation = "moldock_exp.num_modes_ablation:main"
 
 [tool.setuptools.packages.find]

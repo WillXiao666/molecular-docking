@@ -26,19 +26,19 @@ def parse_int_list(text: str) -> list[int]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run num_modes ablation and compare poses to ligand.sdf.")
+    parser = argparse.ArgumentParser(description="Run exhaustiveness-only ablation with a fixed random seed.")
     parser.add_argument("--data-dir", default=".", help="Directory containing protein, ligand and box files. Default: current directory.")
     parser.add_argument("--protein", help="Protein filename/path. Defaults to protein_with_h.pdb, then protein.pdb.")
     parser.add_argument("--ligand", help="Ligand SDF filename/path. Defaults to ligand.sdf.")
     parser.add_argument("--box-config", help="Box config filename/path. Defaults to box_config.txt.")
-    parser.add_argument("--num-modes-values", default="10,20,30,40")
-    parser.add_argument("--exhaustiveness", type=int, default=16)
-    parser.add_argument("--energy-range", type=int, default=6)
+    parser.add_argument("--exhaustiveness-values", default="4,8,12,16,24,32,48,64")
     parser.add_argument("--seed", type=int, default=12345)
+    parser.add_argument("--num-modes", type=int, default=10)
+    parser.add_argument("--energy-range", type=int, default=4)
     parser.add_argument("--cpu", type=int, default=os.cpu_count() or 1)
     parser.add_argument("--default-altloc", default="A")
     parser.add_argument("--no-allow-bad-res", action="store_true")
-    parser.add_argument("--output-name", default="num_modes_ablation")
+    parser.add_argument("--output-name", default="exhaustiveness_ablation")
     parser.add_argument("--work-root", help="ASCII scratch directory. Defaults to the system temp directory.")
     return parser
 
@@ -48,7 +48,7 @@ def main() -> int:
     data_dir = Path(args.data_dir).resolve()
     output_dir = data_dir / "vina_runs" / args.output_name
     output_dir.mkdir(parents=True, exist_ok=True)
-    scratch = make_scratch(args.work_root, "vina_num_modes_ablation")
+    scratch = make_scratch(args.work_root, "vina_exhaustiveness_ablation")
 
     protein, ligand_sdf, box_file = copy_inputs_to_scratch(
         data_dir,
@@ -68,24 +68,24 @@ def main() -> int:
 
     summary_rows: list[dict[str, object]] = []
     pose_rows: list[dict[str, object]] = []
-    for num_modes in parse_int_list(args.num_modes_values):
-        params = DockingParams(args.exhaustiveness, num_modes, args.energy_range, args.seed, args.cpu)
-        label = f"num_modes_{num_modes}"
+    for exhaustiveness in parse_int_list(args.exhaustiveness_values):
+        params = DockingParams(exhaustiveness, args.num_modes, args.energy_range, args.seed, args.cpu)
+        label = f"exh_{exhaustiveness}"
         run_dir = scratch / label
         docked_pdbqt, _ = run_vina(receptor, ligand_pdbqt, box, run_dir, params)
         docked_sdf = export_poses(docked_pdbqt, run_dir)
         results = evaluate_poses(ligand_sdf, docked_sdf, docked_pdbqt)
 
-        extra = {"num_modes_setting": num_modes}
+        extra = {"exhaustiveness": exhaustiveness, "seed": args.seed}
         summary_rows.append(summarize_pose_results(results, extra))
         pose_rows.extend(pose_results_to_rows(results, extra))
         copy_run_files(run_dir, output_dir / label)
 
-    write_csv(output_dir / "summary_by_num_modes.csv", summary_rows)
+    write_csv(output_dir / "summary_by_exhaustiveness.csv", summary_rows)
     write_csv(output_dir / "pose_rmsd_by_mode.csv", pose_rows)
     print("\nDone")
     print(f"  output: {output_dir}")
-    print(f"  summary: {output_dir / 'summary_by_num_modes.csv'}")
+    print(f"  summary: {output_dir / 'summary_by_exhaustiveness.csv'}")
     return 0
 
 

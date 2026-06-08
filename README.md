@@ -24,11 +24,12 @@ Install this package:
 pip install -e . --no-deps
 ```
 
-After installation, three commands are available:
+After installation, four commands are available:
 
 ```text
 dock-run
 dock-exhaustiveness-ablation
+dock-seed-ablation
 dock-num-modes-ablation
 ```
 
@@ -78,12 +79,12 @@ data/vina_runs/single_docking/
 
 ## Experiments
 
-### Exhaustiveness + Seed Ablation
+### Exhaustiveness Ablation
 
 ```powershell
 dock-exhaustiveness-ablation `
-  --exhaustiveness-values 8,16,32,64 `
-  --seeds 1,2,3,4,5 `
+  --exhaustiveness-values 4,8,12,16,24,32,48,64 `
+  --seed 12345 `
   --num-modes 10 `
   --energy-range 4 `
   --cpu 20
@@ -92,8 +93,27 @@ dock-exhaustiveness-ablation `
 Outputs:
 
 ```text
-data/vina_runs/exhaustiveness_seed_ablation/
-  summary_by_run.csv
+data/vina_runs/exhaustiveness_ablation/
+  summary_by_exhaustiveness.csv
+  pose_rmsd_by_mode.csv
+```
+
+### Seed Ablation
+
+```powershell
+dock-seed-ablation `
+  --seeds 1,2,3,4,5,6,7,8,9,10 `
+  --exhaustiveness 16 `
+  --num-modes 10 `
+  --energy-range 4 `
+  --cpu 20
+```
+
+Outputs:
+
+```text
+data/vina_runs/seed_ablation/
+  summary_by_seed.csv
   pose_rmsd_by_mode.csv
 ```
 
@@ -103,7 +123,7 @@ data/vina_runs/exhaustiveness_seed_ablation/
 dock-num-modes-ablation `
   --num-modes-values 10,20,30,40 `
   --exhaustiveness 16 `
-  --energy-range 4 `
+  --energy-range 6 `
   --seed 12345 `
   --cpu 20
 ```
